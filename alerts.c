@@ -145,7 +145,8 @@ alerts_reset(struct window *w)
 		evtimer_set(&w->alerts_timer, alerts_timer, w);
 
 	w->flags &= ~WINDOW_SILENCE;
-	event_del(&w->alerts_timer);
+	if (event_initialized(&w->alerts_timer))
+		event_del(&w->alerts_timer);
 
 	timerclear(&tv);
 	tv.tv_sec = options_get_number(w->options, "monitor-silence");
