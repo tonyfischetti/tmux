@@ -1015,6 +1015,9 @@ struct mouse_event {
 
 	key_code	key;
 	int		statusat;
+    int		auxstatusat;
+    int		anyatzero;
+    int		anyonlast;
 
 	u_int		x;
 	u_int		y;
@@ -1355,6 +1358,7 @@ struct client {
 
 	struct event	 status_timer;
 	struct screen	 status;
+ 	struct screen	 aux_status;
 
 	struct screen	*old_status;
 
@@ -1930,6 +1934,10 @@ void	 status_update_saved(struct session *s);
 int	 status_at_line(struct client *);
 struct window *status_get_window_at(struct client *, u_int);
 int	 status_redraw(struct client *);
+int	 aux_status_at_line(struct client *);
+int	 any_status_at_zero(struct client *);
+int	 any_status_on_last(struct client *);
+int	 aux_status_redraw(struct client *);
 void printflike(2, 3) status_message_set(struct client *, const char *, ...);
 void	 status_message_clear(struct client *);
 int	 status_message_redraw(struct client *);

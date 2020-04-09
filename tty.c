@@ -1037,7 +1037,8 @@ tty_write(void (*cmdfn)(struct tty *, const struct tty_ctx *),
 
 		ctx->xoff = wp->xoff;
 		ctx->yoff = wp->yoff;
-		if (status_at_line(c) == 0)
+		/* if (status_at_line(c) == 0) */
+        if (any_status_at_zero(c))
 			ctx->yoff++;
 
 		cmdfn(&c->tty, ctx);
