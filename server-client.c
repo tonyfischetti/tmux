@@ -194,6 +194,7 @@ server_client_create(int fd)
 	c->tty.sy = 24;
 
 	screen_init(&c->status, c->tty.sx, 1, 0);
+	screen_init(&c->aux_status, c->tty.sx, 1, 0);
 
 	c->message_string = NULL;
 	TAILQ_INIT(&c->message_log);
@@ -495,6 +496,9 @@ have_event:
 
 	/* Is this on the status line? */
 	m->statusat = status_at_line(c);
+	m->auxstatusat = aux_status_at_line(c);
+    m->anyatzero = any_status_at_zero(c);
+    m->anyonlast = any_status_on_last(c);
 	if (m->statusat != -1 && y == (u_int)m->statusat) {
 		w = status_get_window_at(c, x);
 		if (w == NULL)
@@ -506,10 +510,10 @@ have_event:
 
 	/* Not on status line. Adjust position and check for border or pane. */
 	if (where == NOWHERE) {
-		if (m->statusat == 0 && y > 0)
+		if (m->anyatzero && y > 0)
 			y--;
-		else if (m->statusat > 0 && y >= (u_int)m->statusat)
-			y = m->statusat - 1;
+		if (m->anyonlast && y >= m->auxstatusat + m->statusat)
+			y = m->auxstatusat + m->statusat - 1;
 
 		TAILQ_FOREACH(wp, &s->curw->window->panes, entry) {
 			if ((wp->xoff + wp->sx == x &&
@@ -1211,7 +1215,7 @@ server_client_reset_state(struct client *c)
 	struct window_pane	*wp = w->active, *loop;
 	struct screen		*s = wp->screen;
 	struct options		*oo = c->session->options;
-	int			 status, mode, o;
+	int			 status, aux_status, row_redux, mode, o1, o2;
 
 	if (c->flags & (CLIENT_CONTROL|CLIENT_SUSPENDED))
 		return;
@@ -1220,11 +1224,14 @@ server_client_reset_state(struct client *c)
 	tty_margin_off(&c->tty);
 
 	status = options_get_number(oo, "status");
+	aux_status = options_get_number(oo, "aux-status");
+    row_redux = status + aux_status;
 	if (!window_pane_visible(wp) || wp->yoff + s->cy >= c->tty.sy - status)
 		tty_cursor(&c->tty, 0, 0);
 	else {
-		o = status && options_get_number(oo, "status-position") == 0;
-		tty_cursor(&c->tty, wp->xoff + s->cx, o + wp->yoff + s->cy);
+		o1 = status && options_get_number(oo, "status-position") == 0;
+		o2 = aux_status && options_get_number(oo, "aux-status-position") == 0;
+        tty_cursor(&c->tty, wp->xoff + s->cx, o1 + o2 + wp->yoff + s->cy);
 	}
 
 	/*
