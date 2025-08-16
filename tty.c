@@ -488,8 +488,22 @@ void
 tty_putcode_ptr2(struct tty *tty, enum tty_code_code code, const void *a,
     const void *b)
 {
-	if (a != NULL && b != NULL)
-		tty_puts(tty, tty_term_ptr2(tty->term, code, a, b));
+	const char *out;
+
+	/* Must have both params for %p1%s / %p2%s */
+	if (a == NULL || b == NULL)
+		return;
+
+	/* Don’t try to emit a cap the terminfo doesn’t actually have */
+	if (!tty_term_has(tty->term, code))
+		return;
+
+	/* Expand the terminfo string; some ncurses combos can return NULL */
+	out = tty_term_ptr2(tty->term, code, a, b);
+	if (out == NULL || out == (char *)-1 || *out == '\0')
+		return;
+
+	tty_puts(tty, out);
 }
 
 static void
@@ -515,6 +529,8 @@ tty_add(struct tty *tty, const char *buf, size_t len)
 void
 tty_puts(struct tty *tty, const char *s)
 {
+    if (s == NULL) return;
+
 	if (*s != '\0')
 		tty_add(tty, s, strlen(s));
 }
@@ -1380,6 +1396,9 @@ tty_cmd_setselection(struct tty *tty, const struct tty_ctx *ctx)
 
 	if (!tty_term_has(tty->term, TTYC_MS))
 		return;
+
+    if (tty_term_string(tty->term, TTYC_MS) == NULL)
+        return;
 
 	off = 4 * ((ctx->num + 2) / 3) + 1; /* storage for base64 */
 	buf = xmalloc(off);
