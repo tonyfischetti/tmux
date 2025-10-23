@@ -390,14 +390,13 @@ screen_redraw_screen(struct client *c, int draw_panes, int draw_statuses,
 	status = options_get_number(oo, "status");
 	aux_status = options_get_number(oo, "aux-status");
 	row_redux = status + aux_status;
+	pane_status = options_get_number(wo, "pane-border-status");  // FIX: Initialize pane_status
 
 	/* Get status line, er, status. */
 	spos = options_get_number(oo, "status-position");
 	apos = options_get_number(oo, "aux-status-position");
 	if (c->message_string != NULL || c->prompt_string != NULL)
 		status = 1;
-	/* else */
-	/* 	status = options_get_number(oo, "status"); */
 
 	top = 0;
 	top_filled = 0;
@@ -410,8 +409,11 @@ screen_redraw_screen(struct client *c, int draw_panes, int draw_statuses,
 		top_filled = 1;
 
 	/* Draw the elements. */
-	if (draw_borders)
-		screen_redraw_draw_borders(c, row_redux, pane_status,  top_filled);
+	if (draw_borders) {
+		screen_redraw_draw_borders(c, row_redux, pane_status, top_filled);
+		if (pane_status != CELL_STATUS_OFF)
+			screen_redraw_draw_pane_status(c, pane_status);
+	}
 	if (draw_panes)
 		screen_redraw_draw_panes(c, top_filled);
 	if (draw_statuses){
