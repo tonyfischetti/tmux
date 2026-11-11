@@ -464,6 +464,10 @@ screen_redraw_draw_borders(struct client *c, int row_redux, int pane_status, u_i
 	const char		*tmp;
 	size_t			 msglen = 0;
 
+	/* No rows left for the window, so there are no borders to draw. */
+	if (tty->sy <= (u_int)row_redux)
+		return;
+
 	small = ((tty->sy - row_redux + top_filled > w->sy) || (tty->sx > w->sx));
 	if (small) {
 		flags = w->flags & (WINDOW_FORCEWIDTH|WINDOW_FORCEHEIGHT);
