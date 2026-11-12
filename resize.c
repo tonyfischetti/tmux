@@ -71,7 +71,7 @@ recalculate_sizes(void)
 					ssx = c->tty.sx;
 				if (row_redux &&
                     !(c->flags & CLIENT_CONTROL) &&
-                    c->tty.sy > 1 && c->tty.sy - 1 < ssy)
+                    c->tty.sy > 1 && c->tty.sy - row_redux < ssy)
 					ssy = c->tty.sy - row_redux;
 				else if (c->tty.sy < ssy)
 					ssy = c->tty.sy;
