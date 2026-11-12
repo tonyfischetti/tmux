@@ -1232,7 +1232,8 @@ server_client_reset_state(struct client *c)
 	status = options_get_number(oo, "status");
 	aux_status = options_get_number(oo, "aux-status");
     row_redux = status + aux_status;
-	if (!window_pane_visible(wp) || wp->yoff + s->cy >= c->tty.sy - status)
+	if (!window_pane_visible(wp) ||
+	    wp->yoff + s->cy + row_redux >= c->tty.sy)
 		tty_cursor(&c->tty, 0, 0);
 	else {
 		o1 = status && options_get_number(oo, "status-position") == 0;
