@@ -511,6 +511,11 @@ have_event:
 
 	/* Not on status line. Adjust position and check for border or pane. */
 	if (where == NOWHERE) {
+		/* Nothing to click on the aux status line, unless dragging. */
+		if (m->auxstatusat != -1 && y == (u_int)m->auxstatusat &&
+		    !c->tty.mouse_drag_flag)
+			return (KEYC_UNKNOWN);
+
 		if (m->anyatzero && y > 0)
 			y--;
 		if (m->anyonlast && y >= m->auxstatusat + m->statusat)
